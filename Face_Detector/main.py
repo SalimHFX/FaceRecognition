@@ -9,15 +9,25 @@
 # How to detect faces of larger size? Just decrease the size of the input image. You can process several sizes,
 # for example by reducing by a factor of 1.2 each time. This is called a (image) pyramid.
 
-from Face_Classifier.loader import load_single_dataset
+# Au début on a une image 500*500 par exemple
+# Boucler
+#   Parcourir chaque position (x,y) de cette image pour décider s'il y a un visage ou non
+#   S'il n'y a pas de visage
+#       Réduire l'image d'un facteur de 1.2 et recommencer
+
+from FaceRecognition.Face_Classifier.loader import load_single_dataset
 import torchvision.transforms as transforms
-from Face_Classifier.net import Net
+from FaceRecognition.Face_Classifier.net import Net
 import torch
-from utils import dataset_show
+from FaceRecognition.utils import dataset_show, imshow
 import matplotlib.pyplot as plt
+from PIL import Image
+from FaceRecognition.utils import pyramid_sliding_window, simplified_window
+import imutils
+import numpy as np
 
 # GLOBAL VARIABLES
-dataset_dir = '/home/salim/PycharmProjects/Face_Recognition/Detector_DATA/v1/BW'
+dataset_dir = '/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1/BW'
 transform = transforms.Compose(
         [transforms.Grayscale(),
          transforms.ToTensor(),
@@ -27,9 +37,9 @@ valid_size = 0.2
 # plus rapide des poids du net. En général la convergence est plus rapide avec
 # des batchs petits mais l'exécution est plus lente (epochs plus longues)
 # Valeurs = puissances de 2 en général, pour faciliter le travail GPU
-batch_size = 32
+batch_size = 1
 classes = ('noface','face')
-model_path = '/home/salim/PycharmProjects/Face_Recognition/Face_Classifier/model_v0.pth'
+model_path = '/home/salim/Coding/Face_Recognition/FaceRecognition/Face_Classifier/model_v0.pth'
 
 
 if __name__ == '__main__':
@@ -46,16 +56,30 @@ if __name__ == '__main__':
     net.load_state_dict(torch.load(model_path))
 
     # Apply the face classifier on each position (x,y) of the image
-    images, labels = dataset_show(data_loader,classes)
+    dataiter = iter(data_loader)
+    image, label = dataiter.next() #img.shape = [1,1,500,500]
 
+    # Loop over each 500*500 image
+    # For each image
+    #   Cut a 32*32 window and give it to the net as an input
+    #   Move the window 1 pixel to the right
+
+    # Original tensor size is [32,1,500,500] (if batch = 32)
+    # image.permute(2, 3, 1, 0) gives [500,500,32,1] -> blue/green img
+    # ou plus simplement on vire les dimensions qui ne nous intéressent pas
+    image = image[0,0,:,:]
+    pyramid_sliding_window(np.array(image), 1.2, 36, 36, 5)
+
+    '''
     outputs = net(images) #ça plante ici -> size mismatch
     _, predicted = torch.max(outputs, 1)
 
     print('Predicted: ', ' '.join('%5s' % classes[predicted[j]] for j in range(20)))
+    '''
 
     # Decide if the image contains a face or not (softmax ?)
 
     # Implement some visualization method to color the detected face on the picture
 
     # Little workaround to stop the matplotlib show() from blocking the console
-    plt.show()
+    #plt.show()
