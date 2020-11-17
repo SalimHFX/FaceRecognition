@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # Define the CNN
     net = Net()
     # Define a Loss function and Optimizer
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss() #en python crossEntropyLoss utilise la fonction softmax, par défaut seuil à 0.5 si on utilise le max
     # lr = pas
     # Trop faible -> met des heures/jours à converger
     # Trop grand -> pbs numériques (NaN, infini)

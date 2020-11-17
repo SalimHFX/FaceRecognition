@@ -69,7 +69,8 @@ def pyramid_sliding_window(net, image, scale, winW, winH, stepSize):
     # loop over the image pyramid
     for resized in pyramid(image, scale=scale):
         print("resized size = ",resized.shape)
-        cpt = 1
+        detected_faces = []
+        #cpt = 1
         # loop over the sliding window for each layer of the pyramid
         for (x, y, window) in sliding_window(resized, stepSize=stepSize, windowSize=(winW, winH)):
             # if the window does not meet our desired window size, ignore it
@@ -86,18 +87,33 @@ def pyramid_sliding_window(net, image, scale, winW, winH, stepSize):
             #Feed the network the input tensor
             output = net(resized_tensor)
             _, predicted = torch.max(output, 1)
-            if predicted == 1 :
-                print("predicted = ",predicted, cpt)
-                cpt +=1
+            # if output[1] > 0.9 (peut aller jusqu'à 0.99 pour éviter les faux positifs, mais risque de faux négatifs)
+            #print("output = ",output)
+            #print("torch.max(output,1) = ",torch.max(output, 1))
             classes = ('noface','face')
-            #print('Predicted: ', ' '.join('%5s' % classes[predicted[j]] for j in range(20)))
+            if predicted == 1 :
+                #print("predicted = ",classes[predicted], cpt)
+                #cpt +=1
+                detected_faces.append((x,y))
 
-
+            '''
             #Draw the sliding window
             clone = resized.copy() #copy=np funct
             img = cv2.rectangle(clone, (x, y), (x + winW, y + winH), (255, 0, 0), 4)
             cv2.imshow("Window", img)
             cv2.waitKey(1)
             time.sleep(0.025)#0.025
+            '''
+
+        #Here the sliding window is done for one pyramid scale
+        #We draw the detected faces
+        faces_img = resized.copy()
+        for face in detected_faces:
+            faces_img = cv2.rectangle(faces_img, face, (face[0] + winW, face[1] + winH), (255, 0, 0), 4)
+            cv2.imshow("Window", faces_img)
+        cv2.waitKey(0)
+
+
+
 
 

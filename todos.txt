@@ -1,0 +1,23 @@
+# TODO : Afficher les résultats sur l'image : DONE
+
+# TODO : Baisser les faux positifs en jouant sur le seuil du softmax : DOING
+# piste : peut-être rajouter une couche softmax dans le cnn
+
+# TODO : ne pas détecter le même visage plusieurs fois
+# deux approches :
+# 1- chevauchement des rectangles -> fusionner (chaque rectangle par rapport à tous les autres, donc comp quadratique)
+#    seuil par exemple 60-70% de chevauchement avant de décider de fusionner
+# 2- clustering avec distance euclidienne pour regrouper plusieurs points, hierarchical clustering ou
+#    dbscan(epsilon=dist max voisins, nb_min_points_par_cluster)
+#    Sur quelle dimension lancer le clustering : position (x,y) + l'échelle
+
+# TODO : improve face classifier
+# imbalanced classes = au niveau du classifieur, ça l'améliorera et ça réduira les faux positifs du détecteur
+#
+# utiliser plus d'epochs
+
+# TODO : use validation set
+# pendant l'entrainement, toutes les N epochs, tester ses performances sur le validation set
+# si on voit que le loss augmente sur la validation, on arrête (early-stopping) car c'est
+# de l'overfitting
+# sauvegarder le cnn au moment où le loss est minimal
