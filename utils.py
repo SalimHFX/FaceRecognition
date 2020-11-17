@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
 import torchvision
+import torch
 import os
 from PIL import Image
 import cv2
@@ -64,10 +65,11 @@ def sliding_window(image, stepSize, windowSize):
 			yield (x, y, image[y:y + windowSize[1], x:x + windowSize[0]])
 
 
-def pyramid_sliding_window(image, scale, winW, winH, stepSize):
+def pyramid_sliding_window(net, image, scale, winW, winH, stepSize):
     # loop over the image pyramid
     for resized in pyramid(image, scale=scale):
         print("resized size = ",resized.shape)
+        cpt = 1
         # loop over the sliding window for each layer of the pyramid
         for (x, y, window) in sliding_window(resized, stepSize=stepSize, windowSize=(winW, winH)):
             # if the window does not meet our desired window size, ignore it
@@ -76,12 +78,26 @@ def pyramid_sliding_window(image, scale, winW, winH, stepSize):
             # THIS IS WHERE YOU WOULD PROCESS YOUR WINDOW, SUCH AS APPLYING A
             # MACHINE LEARNING CLASSIFIER TO CLASSIFY THE CONTENTS OF THE
             # WINDOW
-            # since we do not have a classifier, we'll just draw the window
 
+            #We use the 36*36 window to match the net's img input size
+            resized_tensor = torch.from_numpy(window)
+            #Transform the 500*500 (2d) img to a 4d tensor (the additional 2 dimensions contain no information)
+            resized_tensor = resized_tensor[None,None,:,:] #tensor shape is now [1,1,500,500]
+            #Feed the network the input tensor
+            output = net(resized_tensor)
+            _, predicted = torch.max(output, 1)
+            if predicted == 1 :
+                print("predicted = ",predicted, cpt)
+                cpt +=1
+            classes = ('noface','face')
+            #print('Predicted: ', ' '.join('%5s' % classes[predicted[j]] for j in range(20)))
+
+
+            #Draw the sliding window
             clone = resized.copy() #copy=np funct
             img = cv2.rectangle(clone, (x, y), (x + winW, y + winH), (255, 0, 0), 4)
             cv2.imshow("Window", img)
             cv2.waitKey(1)
-            time.sleep(0.00025)#0.025
+            time.sleep(0.025)#0.025
 
 
