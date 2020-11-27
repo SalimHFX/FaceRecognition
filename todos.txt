@@ -1,7 +1,12 @@
 # TODO : Afficher les résultats sur l'image : DONE
 
+# TODO : Lancer le rapport et écrire les parties du projet qu'on a déjà faites : DOING
+
 # TODO : Baisser les faux positifs en jouant sur le seuil du softmax : DOING
-# piste : peut-être rajouter une couche softmax dans le cnn
+# - identifier où se trouve la partie du code à modifier : DONE
+# - comprendre ce que renvoie le CNN en sortie quand on lui donne une image en entrée : DOING
+# - pour voir si ça marche : nécessité de loader la même image
+# - piste : peut-être rajouter une couche softmax dans le cnn
 
 # TODO : ne pas détecter le même visage plusieurs fois
 # deux approches :
@@ -21,3 +26,5 @@
 # si on voit que le loss augmente sur la validation, on arrête (early-stopping) car c'est
 # de l'overfitting
 # sauvegarder le cnn au moment où le loss est minimal
+#
+# faire de la cross-validation ?

@@ -70,7 +70,6 @@ def pyramid_sliding_window(net, image, scale, winW, winH, stepSize):
     for resized in pyramid(image, scale=scale):
         print("resized size = ",resized.shape)
         detected_faces = []
-        #cpt = 1
         # loop over the sliding window for each layer of the pyramid
         for (x, y, window) in sliding_window(resized, stepSize=stepSize, windowSize=(winW, winH)):
             # if the window does not meet our desired window size, ignore it
@@ -86,15 +85,28 @@ def pyramid_sliding_window(net, image, scale, winW, winH, stepSize):
             resized_tensor = resized_tensor[None,None,:,:] #tensor shape is now [1,1,500,500]
             #Feed the network the input tensor
             output = net(resized_tensor)
+
+            #softmax dim parameter : 0->columns add up to 1, 1->rows add up to 1. OR IS IT THE OPPOSITE ?
+            softmax = torch.nn.functional.softmax(output,dim=1)
+            #print("softmax = ",softmax)
+            #'''
+            if softmax[0][1] >= 0.99:
+                print('detected new face')
+                detected_faces.append((x,y))
+            #'''
+
+            '''
+            # Old version : using softmax's default threshold = 0.5, LOTS of false positives
+            classes = ('noface','face')
             _, predicted = torch.max(output, 1)
             # if output[1] > 0.9 (peut aller jusqu'à 0.99 pour éviter les faux positifs, mais risque de faux négatifs)
             #print("output = ",output)
             #print("torch.max(output,1) = ",torch.max(output, 1))
-            classes = ('noface','face')
             if predicted == 1 :
-                #print("predicted = ",classes[predicted], cpt)
-                #cpt +=1
+                print('detected new face')
                 detected_faces.append((x,y))
+            #print('\n')
+            '''
 
             '''
             #Draw the sliding window
