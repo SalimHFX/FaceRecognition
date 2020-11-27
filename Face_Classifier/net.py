@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 # Conseils d'ordre général sur les CNN
 # - Les couches de Conv permettent de trouver les features locales. Les couches FC permettent de classifier les features
 # - En général 1 à 3 couches FC. Ça n'ajoute rien de rajouter de la profondeur (i.e nb de couches) dans les couches FC. Rajouter plutôôt
@@ -29,9 +30,9 @@ class Net(nn.Module):
         # Max-pooling with the pool layer
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        #x = x.view(-1, 16 * 5 * 5) # ?
+        # x = x.view(-1, 16 * 5 * 5) # ?
         # créer un vect 1D à partir d'une matrice 2D en concaténant les lignes
-        x = x.view(-1,self.num_flat_features(x))
+        x = x.view(-1, self.num_flat_features(x))
         # Two ReLu layers
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
@@ -39,10 +40,10 @@ class Net(nn.Module):
         x = self.fc3(x)
         return x
 
-    #nb total d'éléments
+    # nb total d'éléments
     def num_flat_features(self, x):
-      size = x.size()[1:]  # all dimensions except the batch dimension
-      num_features = 1
-      for s in size:
-        num_features*= s
-      return num_features
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
