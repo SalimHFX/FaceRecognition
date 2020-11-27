@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # lr = pas
     # Trop faible -> met des heures/jours à converger
     # Trop grand -> pbs numériques (NaN, infini)
-    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
     # Switch device to GPU before training the net (doesn't work atm, cuda needs to be enabled)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)

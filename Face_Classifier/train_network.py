@@ -3,6 +3,7 @@ import torch
 
 def train_net(train_loader, valid_loader, net, device, optimizer, criterion, model_path):
 
+    # keep track of losses to check how many epochs it takes to converge
     train_losses = []
     val_losses = []
 
