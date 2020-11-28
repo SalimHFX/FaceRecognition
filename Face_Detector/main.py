@@ -27,6 +27,7 @@ import imutils
 import numpy as np
 
 # GLOBAL VARIABLES
+#dataset_dir = '/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1/BW'
 dataset_dir = '/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1_reduced/BW'
 transform = transforms.Compose(
         [transforms.Grayscale(),

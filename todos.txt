@@ -2,7 +2,7 @@
 
 # TODO : Lancer le rapport et écrire les parties du projet qu'on a déjà faites : DOING
 
-# TODO : Baisser les faux positifs en jouant sur le seuil du softmax : DOING
+# TODO : Baisser les faux positifs en jouant sur le seuil du softmax : DONE
 # - identifier où se trouve la partie du code à modifier : DONE
 # - comprendre ce que renvoie le CNN en sortie quand on lui donne une image en entrée : DOING
 # - pour voir si ça marche : nécessité de loader la même image
@@ -15,6 +15,10 @@
 # 2- clustering avec distance euclidienne pour regrouper plusieurs points, hierarchical clustering ou
 #    dbscan(epsilon=dist max voisins, nb_min_points_par_cluster)
 #    Sur quelle dimension lancer le clustering : position (x,y) + l'échelle
+
+# La solution imutils non_max_suppression : marche bien mais ne garde qu'un seul rectangle => voir
+# s'il y a moyen de modifier ça : ce qu'on veut c'est éliminer les chevauchements mais garder
+# plusieurs rectangles dans l'image
 
 # TODO : improve face classifier
 # imbalanced classes = au niveau du classifieur, ça l'améliorera et ça réduira les faux positifs du détecteur

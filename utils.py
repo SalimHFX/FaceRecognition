@@ -9,13 +9,15 @@ import cv2
 import time
 import imutils
 
+
 def imshow(img):
-    img = img / 2 + 0.5     # unnormalize
+    img = img / 2 + 0.5  # unnormalize
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show(block=False)
 
-def dataset_show(loader,classes):
+
+def dataset_show(loader, classes):
     # get some random  images from either the training or the testing loader
     dataiter = iter(loader)
     images, labels = dataiter.next()
@@ -23,52 +25,53 @@ def dataset_show(loader,classes):
     # show images
     imshow(torchvision.utils.make_grid(images))
     # print labels
-    print('GroundTruth :',' '.join('%5s' % classes[labels[j]] for j in range(20)))
+    print('GroundTruth :', ' '.join('%5s' % classes[labels[j]] for j in range(20)))
 
-    return images,labels
+    return images, labels
+
 
 # Pour tester le détecteur de visages, on adapte un dataset de visages trouvé sur Kaggle pour en faire le dataset v0 (voir spécifs du v0 dans Face_Detector/main.py)
 # Modifications : conversion en B/W, resize
-def convert_dataset_to_bw(dataset_dir, destination_dir,img_size):
-    for idx,img_name in enumerate(os.listdir(dataset_dir)):
-        img = Image.open(dataset_dir+"/"+img_name)
-        #Convert to BW
+def convert_dataset_to_bw(dataset_dir, destination_dir, img_size):
+    for idx, img_name in enumerate(os.listdir(dataset_dir)):
+        img = Image.open(dataset_dir + "/" + img_name)
+        # Convert to BW
         img = img.convert('L')
-        #Resize the imgs (Net won't accept imgs of different sizes)
+        # Resize the imgs (Net won't accept imgs of different sizes)
         img = img.resize(img_size)
-        #Save the BW image
-        img.save(destination_dir+"/group_"+str(idx)+".png")
-
+        # Save the BW image
+        img.save(destination_dir + "/group_" + str(idx) + ".png")
 
 
 def pyramid(image, scale=1.5, minSize=(30, 30)):
-	# yield the original image
-	yield image
-	# keep looping over the pyramid
-	while True:
-		# compute the new dimensions of the image and resize it
-		w = int(image.shape[0] / scale)
-		image = imutils.resize(image, width=w)
+    # yield the original image
+    yield image
+    # keep looping over the pyramid
+    while True:
+        # compute the new dimensions of the image and resize it
+        w = int(image.shape[0] / scale)
+        image = imutils.resize(image, width=w)
 
-		# if the resized image does not meet the supplied minimum
-		# size, then stop constructing the pyramid
-		if image.shape[0] < minSize[1] or image.shape[1] < minSize[0]:
-			break
-		# yield the next image in the pyramid
-		yield image
+        # if the resized image does not meet the supplied minimum
+        # size, then stop constructing the pyramid
+        if image.shape[0] < minSize[1] or image.shape[1] < minSize[0]:
+            break
+        # yield the next image in the pyramid
+        yield image
+
 
 def sliding_window(image, stepSize, windowSize):
-	# slide a window across the image
-	for y in range(0, image.shape[0], stepSize):
-		for x in range(0, image.shape[1], stepSize):
-			# yield the current window
-			yield (x, y, image[y:y + windowSize[1], x:x + windowSize[0]])
+    # slide a window across the image
+    for y in range(0, image.shape[0], stepSize):
+        for x in range(0, image.shape[1], stepSize):
+            # yield the current window
+            yield (x, y, image[y:y + windowSize[1], x:x + windowSize[0]])
 
 
 def pyramid_sliding_window(net, image, scale, winW, winH, stepSize):
     # loop over the image pyramid
     for resized in pyramid(image, scale=scale):
-        print("resized size = ",resized.shape)
+        print("resized size = ", resized.shape)
         detected_faces = []
         # loop over the sliding window for each layer of the pyramid
         for (x, y, window) in sliding_window(resized, stepSize=stepSize, windowSize=(winW, winH)):
@@ -79,21 +82,18 @@ def pyramid_sliding_window(net, image, scale, winW, winH, stepSize):
             # MACHINE LEARNING CLASSIFIER TO CLASSIFY THE CONTENTS OF THE
             # WINDOW
 
-            #We use the 36*36 window to match the net's img input size
+            # We use the 36*36 window to match the net's img input size
             resized_tensor = torch.from_numpy(window)
-            #Transform the 500*500 (2d) img to a 4d tensor (the additional 2 dimensions contain no information)
-            resized_tensor = resized_tensor[None,None,:,:] #tensor shape is now [1,1,500,500]
-            #Feed the network the input tensor
+            # Transform the 500*500 (2d) img to a 4d tensor (the additional 2 dimensions contain no information)
+            resized_tensor = resized_tensor[None, None, :, :]  # tensor shape is now [1,1,500,500]
+            # Feed the network the input tensor
             output = net(resized_tensor)
 
-            #softmax dim parameter : 0->columns add up to 1, 1->rows add up to 1. OR IS IT THE OPPOSITE ?
-            softmax = torch.nn.functional.softmax(output,dim=1)
-            #print("softmax = ",softmax)
-            #'''
-            if softmax[0][1] >= 0.99:
-                print('detected new face')
-                detected_faces.append((x,y))
-            #'''
+            # We only register faces with a prob higher than 0.99 to avoid false positives
+            # (softmax dim parameter : dim=0->rows add up to 1, dim=1->rows add up to 1)
+            softmax = torch.nn.functional.softmax(output, dim=1)
+            if softmax[0][1] >= 0.999:
+                detected_faces.append((x, y))
 
             '''
             # Old version : using softmax's default threshold = 0.5, LOTS of false positives
@@ -117,15 +117,75 @@ def pyramid_sliding_window(net, image, scale, winW, winH, stepSize):
             time.sleep(0.025)#0.025
             '''
 
-        #Here the sliding window is done for one pyramid scale
-        #We draw the detected faces
+        # We use the non_max_supp algorithm to delete overlaping bounding boxes
+        # to avoid detecting the same face multiple times
+        for i in range(len(detected_faces)):
+            detected_faces[i] = detected_faces[i] + (detected_faces[i][0]+winW, detected_faces[i][1]+winH)
+        detected_faces = non_max_suppression_slow(np.array(detected_faces), 0.01)
+
+        # Here the sliding window is done for one pyramid scale
+        # We draw the detected faces
         faces_img = resized.copy()
-        for face in detected_faces:
-            faces_img = cv2.rectangle(faces_img, face, (face[0] + winW, face[1] + winH), (255, 0, 0), 4)
+        for (startX, startY, endX, endY) in detected_faces:
+            faces_img = cv2.rectangle(faces_img, (startX, startY), (endX, endY), (255, 0, 0), 2)
             cv2.imshow("Window", faces_img)
         cv2.waitKey(0)
 
 
+#  Felzenszwalb et al.
+# WARNING : C'EST PAS CETTE VERSION QUE J'UTILISE DANS LE CODE, C'EST CELLE DE imutils
+def non_max_suppression_slow(boxes, overlapThresh):
+    # if there are no boxes, return an empty list
+    if len(boxes) == 0:
+        return []
+    # initialize the list of picked indexes
+    pick = []
+    # grab the coordinates of the bounding boxes
+    x1 = boxes[:, 0]
+    y1 = boxes[:, 1]
+    x2 = boxes[:, 2]
+    y2 = boxes[:, 3]
+    # compute the area of the bounding boxes and sort the bounding
+    # boxes by the bottom-right y-coordinate of the bounding box
+    area = (x2 - x1 + 1) * (y2 - y1 + 1)
+    idxs = np.argsort(y2)
 
+    # keep looping while some indexes still remain in the indexes
+    # list
+    while len(idxs) > 0:
+        # grab the last index in the indexes list, add the index
+        # value to the list of picked indexes, then initialize
+        # the suppression list (i.e. indexes that will be deleted)
+        # using the last index
+        last = len(idxs) - 1
+        i = idxs[last]
+        pick.append(i)
+        suppress = [last]
 
-
+        # loop over all indexes in the indexes list
+        for pos in range(0, last):
+            # grab the current index
+            j = idxs[pos]
+            # find the largest (x, y) coordinates for the start of
+            # the bounding box and the smallest (x, y) coordinates
+            # for the end of the bounding box
+            xx1 = max(x1[i], x1[j])
+            yy1 = max(y1[i], y1[j])
+            xx2 = min(x2[i], x2[j])
+            yy2 = min(y2[i], y2[j])
+            # compute the width and height of the bounding box
+            w = max(0, xx2 - xx1 + 1)
+            h = max(0, yy2 - yy1 + 1)
+            # compute the ratio of overlap between the computed
+            # bounding box and the bounding box in the area list
+            overlap = float(w * h) / area[j]
+            #print("overlap = ",overlap)
+            # if there is sufficient overlap, suppress the
+            # current bounding box
+            if overlap > overlapThresh:
+                suppress.append(pos)
+        # delete all indexes from the index list that are in the
+        # suppression list
+        idxs = np.delete(idxs, suppress)
+    # return only the bounding boxes that were picked
+    return boxes[pick]
