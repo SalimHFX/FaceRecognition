@@ -16,9 +16,11 @@
 #    dbscan(epsilon=dist max voisins, nb_min_points_par_cluster)
 #    Sur quelle dimension lancer le clustering : position (x,y) + l'échelle
 
-# La solution imutils non_max_suppression : marche bien mais ne garde qu'un seul rectangle => voir
-# s'il y a moyen de modifier ça : ce qu'on veut c'est éliminer les chevauchements mais garder
-# plusieurs rectangles dans l'image
+# La solution imutils non_max_suppression : marche bien
+
+# En gros on a deux params essentiels (seuil_softmax, threshold,NMS), NMS= non_max_supp algo pour supp les chevauchements
+# v1_reduced : marchait bien avec (0.998,0.01)
+# v1_reduced_2 : marche mal avec (0.998,0.01), bcp de faux positifs, et des merges non nécessaires, marche bien avec
 
 # TODO : improve face classifier
 # imbalanced classes = au niveau du classifieur, ça l'améliorera et ça réduira les faux positifs du détecteur

@@ -25,10 +25,11 @@ from PIL import Image
 from FaceRecognition.utils import pyramid_sliding_window
 import imutils
 import numpy as np
+import cv2
 
 # GLOBAL VARIABLES
-#dataset_dir = '/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1/BW'
-dataset_dir = '/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1_reduced/BW'
+dataset_dir = '/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1/BW'
+#dataset_dir = '/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1_reduced_2/BW'
 transform = transforms.Compose(
         [transforms.Grayscale(),
          transforms.ToTensor(),
@@ -58,19 +59,20 @@ if __name__ == '__main__':
 
     # Apply the face classifier on each position (x,y) of the image
     dataiter = iter(data_loader)
-    image, label = dataiter.next() #img.shape = [1,1,500,500]
+    while(1):
+        image, label = dataiter.next() #img.shape = [1,1,500,500]
 
-    # Loop over each 500*500 image
-    # For each image
-    #   Cut a 32*32 window and give it to the net as an input
-    #   Move the window 1 pixel to the right
+        # Loop over each 500*500 image
+        # For each image
+        #   Cut a 32*32 window and give it to the net as an input
+        #   Move the window 1 pixel to the right
 
-    # Original tensor size is [32,1,500,500] (if batch = 32)
-    # image.permute(2, 3, 1, 0) gives [500,500,32,1] -> blue/green img
-    # ou plus simplement on vire les dimensions qui ne nous intéressent pas
-    #image = Image.open('/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1/BW/1/group_5.png')
-    image = image[0,0,:,:]
-    pyramid_sliding_window(net,np.array(image), 1.2, 36, 36, 5)
+        # Original tensor size is [32,1,500,500] (if batch = 32)
+        # image.permute(2, 3, 1, 0) gives [500,500,32,1] -> blue/green img
+        # ou plus simplement on vire les dimensions qui ne nous intéressent pas
+        #image = Image.open('/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1/BW/1/group_5.png')
+        image = image[0,0,:,:]
+        pyramid_sliding_window(net,np.array(image), 1.2, 36, 36, 5)
 
 
 
