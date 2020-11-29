@@ -1,0 +1,4 @@
+to activate cuda and train with GPU
+https://forums.fast.ai/t/torch-cuda-is-available-returns-false/16721/21
+https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1604&target_type=deblocal
+https://stackoverflow.com/questions/60987997/why-torch-cuda-is-available-returns-false-even-after-installing-pytorch-with
