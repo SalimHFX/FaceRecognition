@@ -28,8 +28,8 @@ import numpy as np
 import cv2
 
 # GLOBAL VARIABLES
-dataset_dir = '/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1/BW'
-#dataset_dir = '/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1_reduced_2/BW'
+#dataset_dir = '/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1/BW'
+dataset_dir = '/home/salim/Coding/Face_Recognition/Datasets/Detector_DATA/v1_reduced_2/BW'
 transform = transforms.Compose(
         [transforms.Grayscale(),
          transforms.ToTensor(),
@@ -41,7 +41,7 @@ valid_size = 0.2
 # Valeurs = puissances de 2 en général, pour faciliter le travail GPU
 batch_size = 1
 classes = ('noface','face')
-model_path = '/home/salim/Coding/Face_Recognition/FaceRecognition/Face_Classifier/model_v0.pth'
+model_path = '/home/salim/Coding/Face_Recognition/FaceRecognition/Face_Classifier/model_v1.pth'
 
 
 if __name__ == '__main__':
@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     # Load saved model
     net = Net()
-    net.load_state_dict(torch.load(model_path))
+    net.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 
     # Apply the face classifier on each position (x,y) of the image
     dataiter = iter(data_loader)
