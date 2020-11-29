@@ -69,17 +69,10 @@ def sliding_window(image, stepSize, windowSize):
 
 
 def pyramid_sliding_window(net, image, scale, winW, winH, stepSize):
-    # Store the initial image before resize, it will be used for the final printing
-    faces_img = image.copy()
     # loop over the image pyramid
-    # all_detected_faces : contains for each pyramid level the scaling factor and the detected faces corresponding to
-    # pyramid level
-    all_detected_faces = []
     for resized in pyramid(image, scale=scale):
-        #print("resized size = ", resized.shape)
+        print("resized size = ", resized.shape)
         detected_faces = []
-        curr_scale_factor = image.shape[0] / resized.shape[0]
-        #print(curr_scale_factor)
         # loop over the sliding window for each layer of the pyramid
         for (x, y, window) in sliding_window(resized, stepSize=stepSize, windowSize=(winW, winH)):
             # if the window does not meet our desired window size, ignore it
@@ -124,39 +117,23 @@ def pyramid_sliding_window(net, image, scale, winW, winH, stepSize):
             time.sleep(0.025)#0.025
             '''
 
-        #Add the detected faces and the corresponding factors to the all_faces variable
-        all_detected_faces.append([curr_scale_factor,detected_faces])
+        # We use the non_max_supp algorithm to delete overlaping bounding boxes
+        # to avoid detecting the same face multiple times
+        for i in range(len(detected_faces)):
+            detected_faces[i] = detected_faces[i] + (detected_faces[i][0]+winW, detected_faces[i][1]+winH)
+        detected_faces = non_max_suppression_slow(np.array(detected_faces), 0.01)
 
-    # We use the non_max_supp algorithm to delete overlaping bounding boxes
-    # to avoid detecting the same face multiple times
-    for j in range(len(all_detected_faces)):
-        for i in range(len(all_detected_faces[j][1])): #all_detected_faces[j][1]->detected faces of the i-pyramid-level
-            # in this line we both :
-            # - change the tuple from a 2d (startX, startY) to a 4d (startX, startY, endX, endY)
-            # - multiply each number of the tuple by the current scale factor
-            all_detected_faces[j][1][i] = (
-                                              all_detected_faces[j][1][i][0] * all_detected_faces[j][0], all_detected_faces[j][1][i][1] * all_detected_faces[j][0]
-                                          ) + (
-                                            (all_detected_faces[j][1][i][0] + winW)*all_detected_faces[j][0], (all_detected_faces[j][1][i][1] + winH)*all_detected_faces[j][0]
-            )
-
-    # Concatenate detected faces into the same array
-    final_detected_faces = []
-    for j in range(len(all_detected_faces)):
-        final_detected_faces += all_detected_faces[j][1]
-    final_detected_faces = non_max_suppression_slow(np.array(final_detected_faces), 0.01)
-
-    # Here the sliding window is done for one pyramid scale
-    # We draw the detected faces
-    for (startX, startY, endX, endY) in final_detected_faces:
-        #Converting the coordinates to int to match cv2.rectangle input type
-        startX, startY, endX, endY = int(round(startX)),int(round(startY)), int(round(endX)), int(round(endY))
-        faces_img = cv2.rectangle(faces_img, (startX, startY), (endX, endY), (255, 0, 0), 2)
-        cv2.imshow("Window", faces_img)
-    cv2.waitKey(0)
+        # Here the sliding window is done for one pyramid scale
+        # We draw the detected faces
+        faces_img = resized.copy()
+        for (startX, startY, endX, endY) in detected_faces:
+            faces_img = cv2.rectangle(faces_img, (startX, startY), (endX, endY), (255, 0, 0), 2)
+            cv2.imshow("Window", faces_img)
+        cv2.waitKey(0)
 
 
 #  Felzenszwalb et al.
+# WARNING : C'EST PAS CETTE VERSION QUE J'UTILISE DANS LE CODE, C'EST CELLE DE imutils
 def non_max_suppression_slow(boxes, overlapThresh):
     # if there are no boxes, return an empty list
     if len(boxes) == 0:

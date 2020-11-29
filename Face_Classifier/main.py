@@ -2,10 +2,10 @@ import torchvision.transforms as transforms
 import torch.optim as optim
 import torch.nn as nn
 import torch
-from Face_Classifier.loader import load_datasets
-from Face_Classifier.net import Net
-from Face_Classifier.train_network import train_net
-from utils import dataset_show
+from FaceRecognition.Face_Classifier.loader import load_datasets
+from FaceRecognition.Face_Classifier.net import Net
+from FaceRecognition.Face_Classifier.train_network import train_net
+from FaceRecognition.utils import dataset_show
 import matplotlib.pyplot as plt
 
 # GLOBAL VARIABLES
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # Define the CNN
     net = Net()
     # Define a Loss function and Optimizer
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss() #en python crossEntropyLoss utilise la fonction softmax, par défaut seuil à 0.5 si on utilise le max
     # lr = pas
     # Trop faible -> met des heures/jours à converger
     # Trop grand -> pbs numériques (NaN, infini)
