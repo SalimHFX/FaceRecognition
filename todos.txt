@@ -3,12 +3,9 @@
 # TODO : Lancer le rapport et écrire les parties du projet qu'on a déjà faites : DOING
 
 # TODO : Baisser les faux positifs en jouant sur le seuil du softmax : DONE
-# - identifier où se trouve la partie du code à modifier : DONE
-# - comprendre ce que renvoie le CNN en sortie quand on lui donne une image en entrée : DOING
-# - pour voir si ça marche : nécessité de loader la même image
 # - piste : peut-être rajouter une couche softmax dans le cnn
 
-# TODO : ne pas détecter le même visage plusieurs fois
+# TODO : ne pas détecter le même visage plusieurs fois : DONE
 # deux approches :
 # 1- chevauchement des rectangles -> fusionner (chaque rectangle par rapport à tous les autres, donc comp quadratique)
 #    seuil par exemple 60-70% de chevauchement avant de décider de fusionner
@@ -16,21 +13,17 @@
 #    dbscan(epsilon=dist max voisins, nb_min_points_par_cluster)
 #    Sur quelle dimension lancer le clustering : position (x,y) + l'échelle
 
-# La solution imutils non_max_suppression : marche bien
-
 # En gros on a deux params essentiels (seuil_softmax, threshold,NMS), NMS= non_max_supp algo pour supp les chevauchements
-# v1_reduced : marchait bien avec (0.998,0.01)
-# v1_reduced_2 : marche mal avec (0.998,0.01), bcp de faux positifs, et des merges non nécessaires, marche bien avec
 
-# TODO : improve face classifier
+# TODO : improve face classifier : DONE
 # imbalanced classes = au niveau du classifieur, ça l'améliorera et ça réduira les faux positifs du détecteur
 #
-# utiliser plus d'epochs
+# utiliser plus d'epochs : DONE
 
-# TODO : use validation set
+# TODO : use validation set : DONE
 # pendant l'entrainement, toutes les N epochs, tester ses performances sur le validation set
 # si on voit que le loss augmente sur la validation, on arrête (early-stopping) car c'est
 # de l'overfitting
 # sauvegarder le cnn au moment où le loss est minimal
 #
-# faire de la cross-validation ?
+# faire de la cross-validation : DONE
